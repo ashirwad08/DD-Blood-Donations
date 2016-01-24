@@ -1,8 +1,13 @@
 library(caret)
 library(devtools)
+library(e1071)
+library(randomForest)
+library(rpart)
+library(kernlab)
+library(RCurl)
 
 # if getting from drivendata.org
-competition.train.path <- "https://drivendata.s3.amazonaws.com/data/2/public/9db113a1-cdbe-4b1c-98c2-11590f124dd8.csv"
+competition.train.path <- "http://drivendata.s3.amazonaws.com/data/2/public/9db113a1-cdbe-4b1c-98c2-11590f124dd8.csv"
 
 # locally downloaded 
 #path <- '/Users/ash/Downloads/data/'
@@ -34,8 +39,8 @@ train <- read.csv(competition.train.path, header=T)
         #train <- train[,c('DonorFreq','DonorCoeff','Total.Volume.Donated..c.c..','isMarch07Donor')]
         #test.final <- test[,-c(1,3)]
 
-        library(doMC)
-        registerDoMC(cores=detectCores())
+        #library(doMC)
+        #registerDoMC(cores=detectCores())
         
         # Going to run each algorithm on two models: 
         # original feature set and train.final
@@ -51,20 +56,18 @@ train <- read.csv(competition.train.path, header=T)
                                metric='logLoss',
                                trControl=trainControl(method='repeatedcv',
                                                       number = 3,
-                                                      repeats = 5,
+                                                      repeats = 3,
                                                       summaryFunction = mnLogLoss,
-                                                      classProbs = T,
-                                                      allowParallel = T))
+                                                      classProbs = T))
 
         fit.rpart.final <- train(isMarch07Donor~., data=train,
                                preProcess=c('center','scale','BoxCox'), method="rpart",
                                metric='logLoss',
                                trControl=trainControl(method='repeatedcv',
                                                       number = 3,
-                                                      repeats = 5,
+                                                      repeats = 3,
                                                       summaryFunction = mnLogLoss,
-                                                      classProbs = T,
-                                                      allowParallel = T))
+                                                      classProbs = T))
         fit.svm.final <- train(isMarch07Donor~., data=train,
                               preProcess=c('center','scale','BoxCox'), method="svmRadial",
                               metric='logLoss', tuneLength=5,
@@ -72,8 +75,7 @@ train <- read.csv(competition.train.path, header=T)
                                                      number = 3,
                                                      repeats = 3,
                                                      summaryFunction = mnLogLoss,
-                                                     classProbs = T,
-                                                     allowParallel = T))
+                                                     classProbs = T))
         fit.rf.final <- train(isMarch07Donor~., data=train,
                                preProcess=c('center','scale','BoxCox'), method="rf",
                                metric='logLoss',
